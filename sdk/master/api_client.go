@@ -16,8 +16,6 @@ package master
 
 import (
 	"encoding/json"
-	"fmt"
-	"math/rand"
 
 	"github.com/cubefs/cubefs/proto"
 )
@@ -103,15 +101,6 @@ func (api *ClientAPI) GetMetaPartitions(volName string) (views []*proto.MetaPart
 
 func (api *ClientAPI) GetDataPartitions(volName string) (view *proto.DataPartitionsView, err error) {
 	request := newRequest(get, proto.ClientDataPartitions).Header(api.h).addParam("name", volName)
-
-	lastLeader := api.mc.leaderAddr
-	defer api.mc.SetLeader(lastLeader)
-	randIndex := rand.Intn(len(api.mc.masters))
-	if randIndex >= len(api.mc.masters) {
-		err = fmt.Errorf("master len %v less or equal request index %v", len(api.mc.masters), randIndex)
-		return
-	}
-	api.mc.SetLeader(api.mc.masters[randIndex])
 	var data []byte
 	if data, err = api.mc.serveRequest(request); err != nil {
 		return
